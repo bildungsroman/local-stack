@@ -38,6 +38,8 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt queuedJobs.QueueName
       Events:
         restApiGET:
           Type: Api
@@ -45,8 +47,19 @@ Resources:
             Path: /
             Method: GET
             RestApiId: !Ref restApi
+      Environment:
+        Variables:
+          QUEUE_NAME: !GetAtt queuedJobs.QueueName
+          QUEUE_ARN: !GetAtt queuedJobs.Arn
+          QUEUE_URL: !Ref queuedJobs
     Metadata:
       StackeryName: getEvent
+  queuedJobs:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${AWS::StackName}-queuedJobs
+    Metadata:
+      StackeryName: queuedJobs
 Parameters:
   StackTagName:
     Type: String
